@@ -26,7 +26,7 @@ async function sendWhatsApp(to, message) {
 
 const dashboardClients = new Set();
 
-// SSE endpoint for dashboard updates
+
 app.get('/api/visitors/updates', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -47,19 +47,19 @@ function notifyDashboardUpdate() {
 }
 
 
-// Database setup
+
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/visitor-management';
 mongoose.connect(mongoUri)
   .then(() => console.log('Connected to MongoDB at:', mongoUri))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Middleware
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 
-// File upload configuration
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = 'uploads';
@@ -83,11 +83,11 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 5 * 1024 * 1024
   }
 });
 
-// Email transporter setup with better error handling
+
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
   port: process.env.EMAIL_PORT || 587,
@@ -97,11 +97,11 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS
   },
   tls: {
-    rejectUnauthorized: false // For self-signed certificates
+    rejectUnauthorized: false
   }
 });
 
-// Verify email connection on startup
+
 transporter.verify((error) => {
   if (error) {
     console.error('Email server connection failed:', error);
@@ -110,7 +110,7 @@ transporter.verify((error) => {
   }
 });
 
-// Generate QR Code
+
 async function generateQRCode(visitorId) {
   const url = `${process.env.BASE_URL || 'http://localhost:3000'}/api/visitors/${visitorId}/approve`;
   const qrPath = `uploads/qr-${visitorId}.png`;
@@ -124,7 +124,7 @@ async function generateQRCode(visitorId) {
   }
 }
 
-// Visitor registration endpoint
+
 app.post('/api/visitors', upload.single('photo'), async (req, res) => {
   try {
     const { full_name, contact_number, department_visiting, person_to_visit } = req.body;
@@ -175,7 +175,7 @@ app.post('/api/visitors', upload.single('photo'), async (req, res) => {
   }
 });
 
-// Email sending function with improved error handling
+
 async function sendEmails({ visitorId, full_name, person_to_visit, department_visiting, contact_number, photoUrl, qrUrl }) {
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const approvalUrl = `http://localhost:3000/api/visitors/${visitorId}/approve`;
@@ -209,12 +209,12 @@ async function sendEmails({ visitorId, full_name, person_to_visit, department_vi
   };
 
   try {
-    // Send to HR
+
     mailOptions.to = process.env.HR_EMAIL;
     const hrResult = await transporter.sendMail(mailOptions);
     console.log('Email sent to HR:', hrResult.messageId);
 
-    // Send to host
+
     mailOptions.to = `${person_to_visit.toLowerCase().replace(/\s+/g, '.')}@example.com`;
     const hostResult = await transporter.sendMail(mailOptions);
     console.log('Email sent to host:', hostResult.messageId);
@@ -222,11 +222,11 @@ async function sendEmails({ visitorId, full_name, person_to_visit, department_vi
     await Visitor.findByIdAndUpdate(visitorId, { email_sent: true });
   } catch (error) {
     console.error('Email sending failed:', error);
-    // Retry logic could be added here
+
   }
 }
 
-// Test email endpoint
+
 app.get('/test-email', async (req, res) => {
   try {
     const testEmail = {
@@ -253,7 +253,7 @@ app.get('/test-email', async (req, res) => {
   }
 });
 
-// Approval endpoint
+
 app.get('/api/visitors/:id/approve', async (req, res) => {
   const visitorId = req.params.id;
   
@@ -348,13 +348,13 @@ app.post('/api/visitors/:id/security-checkout', async (req, res) => {
   }
 });
 
-// Excel export endpoint
+
 app.get('/api/visitors/export', async (req, res) => {
   try {
     const { period } = req.query;
     let query = {};
     
-    // Apply time filters if specified
+
     if (period === 'day') {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
@@ -374,7 +374,7 @@ app.get('/api/visitors/export', async (req, res) => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Visitors');
     
-    // Define columns
+
     worksheet.columns = [
       { header: 'ID', key: '_id', width: 25 },
       { header: 'Full Name', key: 'full_name', width: 25 },
@@ -386,7 +386,7 @@ app.get('/api/visitors/export', async (req, res) => {
       { header: 'Status', key: 'status', width: 15 }
     ];
 
-    // Add data rows
+
     visitors.forEach(visitor => {
       worksheet.addRow({
         ...visitor,
@@ -396,12 +396,12 @@ app.get('/api/visitors/export', async (req, res) => {
       });
     });
 
-    // Set response headers
+
     const filename = `visitors_${period || 'all'}_${new Date().toISOString().split('T')[0]}.xlsx`;
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     
-    // Send the Excel file
+
     await workbook.xlsx.write(res);
     res.end();
   } catch (error) {
@@ -413,7 +413,7 @@ app.get('/api/visitors/export', async (req, res) => {
   }
 });
 
-// Visitor statistics endpoint
+
 app.get('/api/visitors/stats', async (req, res) => {
   try {
     const stats = await Visitor.aggregate([
@@ -442,7 +442,7 @@ app.get('/api/visitors/stats', async (req, res) => {
   }
 });
 
-// Visitor listing endpoint with status filtering
+
 app.get('/api/visitors', async (req, res) => {
   const { status } = req.query;
   let query = {};
@@ -462,7 +462,7 @@ app.get('/api/visitors', async (req, res) => {
 
   try {
     const visitors = await Visitor.find(query).sort({ in_time: -1 }).lean();
-    // Map _id to id for frontend compatibility
+
     const visitorsWithId = visitors.map(v => ({ ...v, id: v._id.toString() }));
     res.json(visitorsWithId);
   } catch (err) {
@@ -473,7 +473,7 @@ app.get('/api/visitors', async (req, res) => {
 
 
 
-// Scheduled visitor endpoint
+
 app.post('/api/schedule', async (req, res) => {
   const { full_name, contact_number, department_visiting, person_to_visit } = req.body;
 
@@ -534,7 +534,7 @@ app.post('/api/visitors/:id/allow-entry', async (req, res) => {
     if (!visitor) return res.status(404).json({ error: 'Visitor data not found' });
     
     notifyDashboardUpdate();
-    // Send back full visitor data with mapped id
+
     res.json({ ...visitor, id: visitor._id.toString() });
   } catch (err) {
     console.error('Failed to allow entry:', err);
@@ -545,16 +545,16 @@ app.post('/api/visitors/:id/allow-entry', async (req, res) => {
 
 
 
-// Serve static files (HTML, CSS, JS)
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Handle root route to serve index.html
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 
-// Error handling middleware
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ 
@@ -563,14 +563,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`ExcelJS Version: ${require('exceljs').version}`);
 });
 
-// Graceful shutdown
+
 process.on('SIGTERM', async () => {
   await mongoose.connection.close();
   process.exit(0);

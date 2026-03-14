@@ -36,7 +36,6 @@
         </div>
       </div>
 
-      <!-- ✅ Download Buttons -->
       <div style="margin-bottom: 20px;">
         <button onclick="downloadExcel('day')" class="btn btn-primary">Download Daily Report</button>
         <button onclick="downloadExcel('week')" class="btn btn-primary">Download Weekly Report</button>
@@ -189,7 +188,7 @@
                 .then(visitor => {
                   loadVisitors();
                   loadStats();
-                  showBadge(visitor); // ⬅️ Display badge for printing
+                  showBadge(visitor);
                 })
                 .catch(err => alert(err.message));
             });
@@ -275,7 +274,6 @@
       loadVisitors();
     });
 
-    // ✅ Excel Export Function
     function downloadExcel(period) {
       const url = `/api/visitors/export?period=${period}`;
       console.log('Downloading:', url);
