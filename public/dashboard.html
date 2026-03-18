@@ -137,8 +137,11 @@
         }
 
         fetch(url)
-          .then(res => {
-            if (!res.ok) throw new Error('Error loading visitors');
+          .then(async res => {
+            const contentType = res.headers.get("content-type");
+            if (!res.ok || !contentType || !contentType.includes("application/json")) {
+              throw new Error('Backend unreachable or returning non-JSON. Are you running the local server?');
+            }
             return res.json();
           })
           .then(visitors => {

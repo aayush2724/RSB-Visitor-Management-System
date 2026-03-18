@@ -4,157 +4,142 @@ class VisitorSystem {
     this.canvas = document.getElementById('canvas');
     this.captureBtn = document.getElementById('capture-btn');
     this.visitorForm = document.getElementById('visitor-form');
-    this.photoData = document.getElementById('photo-data');
-    this.visitorBadge = document.getElementById('visitor-badge');
-    this.printBtn = document.getElementById('print-btn');
+    this.passSection = document.getElementById('pass-section');
+    this.badgeDisplay = document.getElementById('badge-display');
     this.stream = null;
+    this.capturedPhoto = null;
     
     this.init();
   }
   
   init() {
-    this.setupCamera();
     this.setupEventListeners();
+    // We'll initialize the camera when the button is clicked to be more polite/efficient
   }
   
-  setupCamera() {
-    if (navigator.mediaDevices?.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          this.stream = stream;
-          this.video.srcObject = stream;
-        })
-        .catch(error => {
-          console.error("Camera error:", error);
-          this.showError("Could not access the camera. Please ensure you've granted camera permissions.");
-        });
-    } else {
-      this.showError("Camera API not supported in your browser.");
+  async setupCamera() {
+    try {
+      if (this.stream) return true; // Already running
+      
+      this.stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "user" } 
+      });
+      this.video.srcObject = this.stream;
+      this.captureBtn.innerHTML = '<i data-lucide="camera"></i> Capture Photo';
+      lucide.createIcons();
+      return true;
+    } catch (error) {
+      console.error("Camera error:", error);
+      alert("Could not access the camera. Please ensure permissions are granted.");
+      return false;
     }
   }
   
   setupEventListeners() {
-    this.captureBtn.addEventListener('click', this.capturePhoto.bind(this));
+    this.captureBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (!this.stream) {
+        await this.setupCamera();
+      } else {
+        this.capturePhoto();
+      }
+    });
+
     this.visitorForm.addEventListener('submit', this.handleFormSubmit.bind(this));
-    this.printBtn.addEventListener('click', this.printBadge.bind(this));
   }
   
-  capturePhoto(e) {
-    e.preventDefault();
-    
-    if (!this.stream) {
-      this.showError("Camera not initialized");
+  capturePhoto() {
+    if (this.video.readyState !== 4) {
+      alert("Video not ready yet. Please wait a moment.");
       return;
     }
-    
+
     this.canvas.width = this.video.videoWidth;
     this.canvas.height = this.video.videoHeight;
-    this.canvas.getContext('2d').drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+    const ctx = this.canvas.getContext('2d');
+    ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
     
-    this.photoData.value = this.canvas.toDataURL('image/png');
-    this.stopCamera();
-  }
-  
-  stopCamera() {
-    if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
-      this.stream = null;
-    }
+    this.capturedPhoto = this.canvas.toDataURL('image/png');
+    
+    // Visual feedback
+    this.video.style.opacity = '0.5';
+    this.video.style.transition = 'opacity 0.3s ease';
+    this.captureBtn.innerHTML = '<i data-lucide="refresh-cw"></i> Retake Photo';
+    lucide.createIcons();
+    
+    console.log("Photo captured successfully");
   }
   
   async handleFormSubmit(e) {
     e.preventDefault();
     
-    const formData = {
-      full_name: document.getElementById('full_name').value.trim(),
-      contact_number: document.getElementById('contact_number').value.trim(),
-      department_visiting: document.getElementById('department_visiting').value,
-      person_to_visit: document.getElementById('person_to_visit').value.trim(),
-      photo: this.photoData.value
-    };
+    if (!this.capturedPhoto) {
+      alert("Please capture a photo before registering.");
+      return;
+    }
+
+    const submitBtn = this.visitorForm.querySelector('button[type="submit"]');
+    const originalBtnHtml = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Processing...';
+    lucide.createIcons();
+    
+    const formData = new FormData();
+    formData.append('full_name', document.getElementById('full_name').value);
+    formData.append('contact_number', document.getElementById('contact_number').value);
+    formData.append('department_visiting', document.getElementById('department_visiting').value);
+    formData.append('person_to_visit', document.getElementById('person_to_visit').value);
+    
+    const blob = await (await fetch(this.capturedPhoto)).blob();
+    formData.append('photo', blob, 'visitor.png');
     
     try {
-      const response = await this.submitVisitorData(formData);
-      formData.qr_url = response.qrUrl;
-      this.displayBadge(formData);
-
+      const response = await fetch('/api/visitors', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) throw new Error('Registration failed');
+      
+      const result = await response.json();
+      this.showSuccess(result);
       this.visitorForm.reset();
+      this.capturedPhoto = null;
+      this.video.style.opacity = '1';
+      this.captureBtn.innerHTML = '<i data-lucide="camera"></i> Initialize Camera';
+      lucide.createIcons();
+      
     } catch (error) {
-      console.error('Submission error:', error);
-      this.showError('Failed to register visitor. Please try again.');
+      console.error('Submit error:', error);
+      alert('Error: ' + error.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnHtml;
+      lucide.createIcons();
     }
   }
   
-  async submitVisitorData(formData) {
-    const fd = new FormData();
-    fd.append('full_name', formData.full_name);
-    fd.append('contact_number', formData.contact_number);
-    fd.append('department_visiting', formData.department_visiting);
-    fd.append('person_to_visit', formData.person_to_visit);
-    
-    if (formData.photo) {
-      const blob = this.dataURLtoBlob(formData.photo);
-      fd.append('photo', blob, 'visitor-photo.png');
-    }
-    
-    const response = await fetch('/api/visitors', {
-      method: 'POST',
-      body: fd
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Server responded with status: ${response.status}`);
-    }
-    
-    return response.json();
-  }
-  
-  displayBadge(formData) {
-    document.getElementById('badge-name').textContent = formData.full_name;
-    document.getElementById('badge-contact').textContent = formData.contact_number;
-    document.getElementById('badge-department').textContent = formData.department_visiting;
-    document.getElementById('badge-host').textContent = formData.person_to_visit;
-    document.getElementById('badge-time').textContent = new Date().toLocaleString();
-    
-    if (formData.photo) {
-      document.getElementById('badge-photo').src = formData.photo;
-    }
-    if (formData.qr_url) {
-      let qr = document.getElementById('badge-qr');
-      if (!qr) {
-        qr = document.createElement('img');
-        qr.id = 'badge-qr';
-        qr.style.marginTop = '10px';
-        qr.style.maxWidth = '150px';
-        this.visitorBadge.appendChild(qr);
-      }
-      qr.src = formData.qr_url;
-  }
-    this.visitorBadge.classList.remove('hidden');
-  }
-  
-  printBadge() {
-    window.print();
-  }
-  
-  dataURLtoBlob(dataurl) {
-    const arr = dataurl.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    const u8arr = new Uint8Array(bstr.length);
-    
-    for (let i = 0; i < bstr.length; i++) {
-      u8arr[i] = bstr.charCodeAt(i);
-    }
-    
-    return new Blob([u8arr], { type: mime });
-  }
-  
-  showError(message) {
-    alert(message);
+  showSuccess(visitor) {
+    this.passSection.style.display = 'block';
+    this.badgeDisplay.innerHTML = `
+      <div class="visitor-badge" style="margin: 20px auto; display: block; text-align: left;">
+        <h2 style="color: #000; margin-bottom: 20px;">Visitor Pass</h2>
+        <div style="display: flex; gap: 20px; align-items: start;">
+          <img src="${this.capturedPhoto}" style="width: 120px; height: 120px; border-radius: 12px; object-fit: cover;">
+          <div class="badge-info" style="flex: 1;">
+            <p><strong>Name:</strong> <span>${visitor.full_name}</span></p>
+            <p><strong>Host:</strong> <span>${visitor.person_to_visit}</span></p>
+            <p><strong>Dept:</strong> <span>${visitor.department_visiting}</span></p>
+            <p><strong>Date:</strong> <span>${new Date().toLocaleDateString()}</span></p>
+          </div>
+        </div>
+        ${visitor.qr_code_path ? `<img src="/${visitor.qr_code_path}" style="width: 100px; margin-top: 15px; display: block;">` : ''}
+      </div>
+    `;
+    this.passSection.scrollIntoView({ behavior: 'smooth' });
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   new VisitorSystem();
-});
+});
