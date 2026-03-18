@@ -1,13 +1,21 @@
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./data/visitors.db');
+// reset.js — Clears all visitor records from MongoDB
+// Usage: node reset.js
+require('dotenv').config();
+const mongoose = require('mongoose');
+const Visitor = require('./models/Visitor');
 
-db.run('DELETE FROM visitors', (err) => {
-  if (err) {
-    console.error('Error deleting entries:', err);
-  } else {
-    console.log('All visitor entries deleted successfully');
-  }
-  db.close();
-});
+const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/visitor-management';
 
-db.run('DELETE FROM sqlite_sequence WHERE name="visitors"');
+mongoose.connect(mongoUri)
+  .then(async () => {
+    console.log('Connected to MongoDB');
+    const result = await Visitor.deleteMany({});
+    console.log(`Deleted ${result.deletedCount} visitor records.`);
+    await mongoose.disconnect();
+    console.log('Done.');
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error('Error:', err.message);
+    process.exit(1);
+  });

@@ -1,20 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Equitum Premium Palette */
   --bg-primary: #0a0b1e;
   --bg-gradient: radial-gradient(circle at 20% 30%, #1a1b4b 0%, #0a0b1e 70%);
   --bg-card: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.08);
-  
-  --accent-green: #00f2fe; /* Cyanish / Greenish */
+
+  --accent-green: #00f2fe;
   --accent-gradient: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
-  --cta-green: #00ffa3; /* Vibrant Green from image */
+  --cta-green: #00ffa3;
   --cta-gradient: linear-gradient(135deg, #00ffa3 0%, #00d1ff 100%);
-  
+
+  /* FIX: Added missing CSS variables used in dashboard.html */
+  --accent: #4facfe;
+  --warning: #f59e0b;
+
   --text-main: #ffffff;
   --text-muted: #94a3b8;
-  
+
   --radius-lg: 24px;
   --radius-md: 16px;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -47,7 +50,6 @@ body {
   .container { padding: 40px 16px; }
 }
 
-/* Premium Header Section */
 header {
   margin-bottom: 60px;
   max-width: 700px;
@@ -75,7 +77,6 @@ header p {
   max-width: 500px;
 }
 
-/* Professional Navigation */
 nav {
   position: absolute;
   top: 40px;
@@ -105,14 +106,12 @@ nav a {
   transition: var(--transition);
 }
 
-nav a:hover {
-  color: #fff;
-}
+nav a:hover { color: #fff; }
 
-/* CTAs and Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   justify-content: center;
   padding: 14px 28px;
   border-radius: 40px;
@@ -128,7 +127,6 @@ nav a:hover {
   background: var(--cta-gradient);
   color: #000;
   box-shadow: 0 10px 30px rgba(0, 255, 163, 0.2);
-  transition: var(--transition);
 }
 
 .btn-primary:hover {
@@ -151,7 +149,6 @@ nav a:hover {
   box-shadow: 0 10px 20px rgba(255, 255, 255, 0.05);
 }
 
-/* Grid Layout for Forms/Identity */
 .form-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -168,7 +165,6 @@ nav a:hover {
   .form-group { margin-bottom: 24px; }
 }
 
-/* Premium Card Design */
 .card {
   background: var(--bg-card);
   backdrop-filter: blur(30px);
@@ -186,7 +182,6 @@ nav a:hover {
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
 }
 
-/* Camera Component */
 .camera-container {
   position: relative;
   overflow: hidden;
@@ -201,14 +196,13 @@ nav a:hover {
   background: #000;
   border-radius: var(--radius-md);
   box-shadow: 0 0 0 1px var(--glass-border);
+  /* FIX: Slightly boost brightness to improve dark webcam captures */
+  filter: brightness(1.15) contrast(1.05);
 }
 
 #canvas { display: none; }
 
-/* Form Elements */
-.form-group {
-  margin-bottom: 32px;
-}
+.form-group { margin-bottom: 32px; }
 
 label {
   display: block;
@@ -237,11 +231,10 @@ input:focus, select:focus {
 }
 
 select option {
-  background-color: #1a1b4b; /* Deep blue/indigo to match theme */
+  background-color: #1a1b4b;
   color: #fff;
 }
 
-/* Specific styling for Report Buttons to make them pop */
 .btn-report {
   background: rgba(0, 242, 254, 0.05);
   border: 1px solid rgba(0, 242, 254, 0.2);
@@ -277,6 +270,7 @@ select option {
   cursor: pointer;
   transition: var(--transition);
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 .tab:hover {
@@ -290,7 +284,6 @@ select option {
   border-color: rgba(0, 255, 163, 0.2);
 }
 
-/* Dashboard Stats (Equitum style) */
 .stats-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -335,12 +328,11 @@ select option {
   font-weight: 600;
 }
 
-/* Tables */
 .table-container {
   background: var(--bg-card);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  overflow-x: auto; /* Enable horizontal scroll for mobile */
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -367,9 +359,7 @@ select option {
 
 .visitor-table tr:last-child td { border-bottom: none; }
 
-.visitor-table tr:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
+.visitor-table tr:hover { background: rgba(255, 255, 255, 0.02); }
 
 /* Status Badges */
 .badge {
@@ -380,10 +370,13 @@ select option {
   letter-spacing: 0.02em;
 }
 
-.badge-active { background: rgba(0, 255, 163, 0.1); color: #00ffa3; }
-.badge-released { background: rgba(79, 172, 254, 0.1); color: #4facfe; }
+.badge-active          { background: rgba(0, 255, 163, 0.1);  color: #00ffa3; }
+.badge-released        { background: rgba(79, 172, 254, 0.1); color: #4facfe; }
+/* FIX: Added missing badge classes used in dashboard.html */
+.badge-security-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.badge-scheduled       { background: rgba(167, 139, 250, 0.1); color: #a78bfa; }
 
-/* Badge Design (For pass printing) */
+/* Visitor Pass Badge (print layout) */
 .visitor-badge {
   background: #fff;
   color: #000;
@@ -410,7 +403,7 @@ select option {
 /* Animations */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 main > * {
@@ -419,5 +412,6 @@ main > * {
 
 @media print {
   body { background: white; }
-  .container > *:not(.visitor-badge) { display: none; }
+  .container > *:not(#pass-section) { display: none; }
+  #pass-section { display: block !important; }
 }
