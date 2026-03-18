@@ -55,16 +55,6 @@ app.use(cors({
   credentials: true
 }));
 
-// Request Logger for debugging slowness
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    console.log(`${req.method} ${req.url} - ${res.statusCode} [${duration}ms]`);
-  });
-  next();
-});
-
 app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
@@ -181,10 +171,7 @@ app.post('/api/visitors', upload.single('photo'), async (req, res) => {
 
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
-    });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

@@ -131,7 +131,7 @@
       });
 
       function loadVisitors() {
-        let url = `${window.API_BASE_URL || ''}/api/visitors`;
+        let url = `/api/visitors`;
         if (currentStatus !== 'all') {
           url += `?status=${currentStatus}`;
         }

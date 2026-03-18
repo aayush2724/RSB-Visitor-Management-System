@@ -94,7 +94,7 @@ class VisitorSystem {
     formData.append('photo', blob, 'visitor.png');
     
     try {
-      const response = await fetch(`${window.API_BASE_URL || ''}/api/visitors`, {
+      const response = await fetch(`/api/visitors`, {
         method: 'POST',
         body: formData
       });
