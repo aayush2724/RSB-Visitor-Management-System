@@ -49,7 +49,22 @@ mongoose.connect(mongoUri)
   .then(() => console.log('Connected to MongoDB at:', mongoUri))
   .catch(err => console.error('MongoDB connection error:', err));
 
-app.use(cors());
+// Middleware
+app.use(cors({
+  origin: ['https://rsb-visitor-management-system.netlify.app', 'http://localhost:3000'],
+  credentials: true
+}));
+
+// Request Logger for debugging slowness
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`${req.method} ${req.url} - ${res.statusCode} [${duration}ms]`);
+  });
+  next();
+});
+
 app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));

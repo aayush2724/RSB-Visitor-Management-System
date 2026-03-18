@@ -14,7 +14,7 @@ class VisitorSystem {
   
   init() {
     this.setupEventListeners();
-    // We'll initialize the camera when the button is clicked to be more polite/efficient
+
   }
   
   async setupCamera() {
@@ -59,7 +59,7 @@ class VisitorSystem {
     const ctx = this.canvas.getContext('2d');
     ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
     
-    this.capturedPhoto = this.canvas.toDataURL('image/png');
+    this.capturedPhoto = this.canvas.toDataURL('image/jpeg', 0.8);
     
     // Visual feedback
     this.video.style.opacity = '0.5';
@@ -142,4 +142,4 @@ class VisitorSystem {
 
 document.addEventListener('DOMContentLoaded', () => {
   new VisitorSystem();
-});
+});
