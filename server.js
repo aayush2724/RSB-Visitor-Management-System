@@ -49,11 +49,7 @@ mongoose.connect(mongoUri)
   .then(() => console.log('Connected to MongoDB at:', mongoUri))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Middleware
-app.use(cors({
-  origin: ['https://rsb-visitor-management-system.netlify.app', 'http://localhost:3000'],
-  credentials: true
-}));
+app.use(cors());
 
 app.use(bodyParser.json());
 app.use(express.static('public'));
