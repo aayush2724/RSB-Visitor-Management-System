@@ -357,29 +357,5 @@
   </div>
 
   <script src="script.js"></script>
-  <script>
-    // Tweak to handle the camera placeholder hide/show
-    const origHandleCam = VisitorSystem.handleCameraClick;
-    VisitorSystem.handleCameraClick = async function() {
-      if(!this.stream) {
-        document.getElementById('cam-placeholder').style.display = 'none';
-        document.getElementById('video').style.display = 'block';
-        await this.initCamera();
-      } else {
-        this.takeSnapshot();
-        document.getElementById('video').style.display = 'none';
-      }
-    };
-    
-    // Tweak showSuccess for new overlay layout
-    VisitorSystem.showSuccess = function(data) {
-      document.getElementById('pass-section').style.display = 'flex';
-      if (data.visitor && data.visitor.qr_code_path) {
-        const qrEl = document.getElementById('pass-qr');
-        qrEl.src = data.visitor.qr_code_path;
-        qrEl.style.display = 'block';
-      }
-    };
-  </script>
 </body>
 </html>

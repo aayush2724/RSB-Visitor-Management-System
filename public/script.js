@@ -5,7 +5,8 @@ class VisitorSystem {
     this.captureBtn = document.getElementById('capture-btn');
     this.visitorForm = document.getElementById('visitor-form');
     this.passSection = document.getElementById('pass-section');
-    this.badgeDisplay = document.getElementById('badge-display');
+    this.camPlaceholder = document.getElementById('cam-placeholder');
+    this.photoStatus = document.getElementById('photo-status');
     this.stream = null;
     this.capturedPhoto = null;
 
@@ -23,9 +24,12 @@ class VisitorSystem {
       this.stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
       });
+      // Clear out the placeholder and reveal the camera 
+      if (this.camPlaceholder) this.camPlaceholder.style.display = 'none';
+      if (this.photoStatus) this.photoStatus.innerText = '';
+      this.video.style.display = 'block';
       this.video.srcObject = this.stream;
-      this.captureBtn.innerHTML = '<i data-lucide="camera"></i> Capture Photo';
-      lucide.createIcons();
+      this.captureBtn.innerText = 'Take Identity Snapshot';
       return true;
     } catch (error) {
       console.error('Camera error:', error);
@@ -34,7 +38,6 @@ class VisitorSystem {
     }
   }
 
-  // FIX: Stop camera stream to turn off webcam LED after registration
   stopCamera() {
     if (this.stream) {
       this.stream.getTracks().forEach(track => track.stop());
@@ -71,29 +74,32 @@ class VisitorSystem {
 
     this.video.style.opacity = '0.5';
     this.video.style.transition = 'opacity 0.3s ease';
-    this.captureBtn.innerHTML = '<i data-lucide="refresh-cw"></i> Retake Photo';
-    lucide.createIcons();
+    this.captureBtn.innerText = 'Retake Validation Snapshot';
+    if (this.photoStatus) this.photoStatus.innerText = 'BIOMETRIC LOCK AFFIRMED';
   }
 
   async handleFormSubmit(e) {
     e.preventDefault();
 
     if (!this.capturedPhoto) {
-      alert('Please capture a photo before registering.');
+      alert('Please capture a photo before authorizing entry.');
       return;
     }
 
     const submitBtn = this.visitorForm.querySelector('button[type="submit"]');
     const originalBtnHtml = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Processing...';
-    lucide.createIcons();
+    submitBtn.innerHTML = 'PROCESSING KEY...';
 
     const formData = new FormData();
     formData.append('full_name', document.getElementById('full_name').value);
     formData.append('contact_number', document.getElementById('contact_number').value);
     formData.append('department_visiting', document.getElementById('department_visiting').value);
     formData.append('person_to_visit', document.getElementById('person_to_visit').value);
+
+    // Hidden field needed for DB schema backwards compat
+    const purposeEl = document.getElementById('purpose_of_visit');
+    formData.append('purpose_of_visit', purposeEl ? purposeEl.value : 'Facility Access');
 
     const blob = await (await fetch(this.capturedPhoto)).blob();
     formData.append('photo', blob, 'visitor.png');
@@ -104,7 +110,6 @@ class VisitorSystem {
         body: formData
       });
 
-      // FIX: Extract real server error message instead of generic "Registration failed"
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
         throw new Error(errData.error || 'Registration failed');
@@ -113,15 +118,15 @@ class VisitorSystem {
       const result = await response.json();
       this.showSuccess(result);
 
-      // Reset form state
+      // Reset
       this.visitorForm.reset();
       this.capturedPhoto = null;
       this.video.style.opacity = '1';
-
-      // FIX: Stop the camera stream so webcam LED turns off
       this.stopCamera();
-      this.captureBtn.innerHTML = '<i data-lucide="camera"></i> Initialize Camera';
-      lucide.createIcons();
+      this.captureBtn.innerText = 'Initiate Capture Protocol';
+      if (this.photoStatus) this.photoStatus.innerText = '';
+      this.video.style.display = 'none';
+      if (this.camPlaceholder) this.camPlaceholder.style.display = 'flex';
 
     } catch (error) {
       console.error('Submit error:', error);
@@ -129,32 +134,19 @@ class VisitorSystem {
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalBtnHtml;
-      lucide.createIcons();
     }
   }
 
-  showSuccess(visitor) {
-    this.passSection.style.display = 'block';
-    this.badgeDisplay.innerHTML = `
-      <div class="visitor-badge" style="margin: 20px auto; display: block; text-align: left;">
-        <h2 style="color: #000; margin-bottom: 20px;">Visitor Pass</h2>
-        <div style="display: flex; gap: 20px; align-items: flex-start;">
-          ${this.capturedPhoto
-            ? `<img src="${this.capturedPhoto}" style="width: 120px; height: 120px; border-radius: 12px; object-fit: cover; flex-shrink: 0;">`
-            : ''}
-          <div class="badge-info" style="flex: 1;">
-            <p><strong>Name:</strong> <span>${visitor.full_name || '—'}</span></p>
-            <p><strong>Host:</strong> <span>${visitor.person_to_visit || '—'}</span></p>
-            <p><strong>Dept:</strong> <span>${visitor.department_visiting || '—'}</span></p>
-            <p><strong>Date:</strong> <span>${new Date().toLocaleDateString()}</span></p>
-          </div>
-        </div>
-        ${visitor.qr_code_path
-          ? `<img src="${visitor.qr_code_path}" style="width: 100px; margin-top: 15px; display: block;" alt="QR Code">`
-          : ''}
-      </div>
-    `;
-    this.passSection.scrollIntoView({ behavior: 'smooth' });
+  showSuccess(data) {
+    this.passSection.style.display = 'flex';
+    const qrUrl = data.qr_code_path || (data.visitor && data.visitor.qr_code_path);
+    if (qrUrl) {
+      const qrEl = document.getElementById('pass-qr');
+      if (qrEl) {
+        qrEl.src = qrUrl;
+        qrEl.style.display = 'block';
+      }
+    }
   }
 }
 
