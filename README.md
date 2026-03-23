@@ -156,6 +156,28 @@ HR_EMAIL=recipient_email@gmail.com
 
 ---
 
+## 🐳 Docker Deployment
+
+To run the entire application stack (Node.js App + MongoDB) instantly using Docker:
+
+1. **Ensure Docker is Installed**
+   Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop) (or Docker Engine) and Docker Compose are installed and running on your system.
+2. **Configure Environment**
+   Ensure your `.env` file is present in the root directory.
+3. **Build and Run the Containers**
+   ```bash
+   docker-compose up -d --build
+   ```
+4. **Access the Application**
+   The application will be available at `http://localhost:3000`. MongoDB will safely run in its own container on port `27017` and retain data via a Docker volume.
+5. **Shutting Down**
+   To stop the services and remove containers, run:
+   ```bash
+   docker-compose down
+   ```
+
+---
+
 ## 💻 Local Development Setup
 
 To run this application locally on your machine for testing or enhancement:
