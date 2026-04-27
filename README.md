@@ -1,6 +1,6 @@
 <div align="center">
   
-# 🛡️ RSB | SECURE Visitor Management System
+# 🛡️ SECURE Visitor Management System
 **Next-Generation Cyberpunk-Themed Enterprise Visitor & Security Tracking**
 
 [![React](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
@@ -8,7 +8,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Twilio](https://img.shields.io/badge/Twilio-F22F46?style=for-the-badge&logo=twilio&logoColor=white)](https://twilio.com/)
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
-[![Deployed on Railway](https://img.shields.io/badge/Railway-131415?style=for-the-badge&logo=railway&logoColor=white)](https://rsb-visitor-management-system-production.up.railway.app/)
+[![Deployed on Railway](https://img.shields.io/badge/Railway-131415?style=for-the-badge&logo=railway&logoColor=white)](https://secure-visitor-management-system-production.up.railway.app/)
 
 <br/>
 
@@ -20,7 +20,7 @@
 
 ## 🌌 Overview
 
-RSB Secure is a fully modernized, cyberpunk-styled full-stack application designed to replace legacy paper-based visitor logs in corporate environments. 
+SECURE is a fully modernized, cyberpunk-styled full-stack application designed to replace legacy paper-based visitor logs in corporate environments. 
 
 It handles end-to-end visitor processing: from initial registration and hardware-locked photo capture, to automated WhatsApp/Email background notifications, secure administrative dashboards, and pre-scheduled visitor entry logic. To ensure absolute data security, an **Encrypted JWT-style Authentication Protocol** protects the backend admin portal from unauthorized access.
 
@@ -184,8 +184,8 @@ To run this application locally on your machine for testing or enhancement:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/RSB-Visitor-Management-System.git
-   cd RSB-Visitor-Management-System
+   git clone https://github.com/yourusername/SECURE-Visitor-Management-System.git
+   cd SECURE-Visitor-Management-System
    ```
 2. **Install dependencies**
    Ensure you have `Node.js` installed, then run:

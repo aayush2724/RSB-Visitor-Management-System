@@ -1,11 +1,11 @@
 // — Secure Auth Guard —
-const token = sessionStorage.getItem('rsb_auth');
-if (token !== 'rsb-admin-auth-token-xyz') {
+const token = sessionStorage.getItem('secure_auth');
+if (token !== 'secure-admin-auth-token-xyz') {
   window.location.href = '/login.html';
 }
 
 function logout() {
-  sessionStorage.removeItem('rsb_auth');
+  sessionStorage.removeItem('secure_auth');
   window.location.href = '/login.html';
 }
 
@@ -164,7 +164,7 @@ function downloadExcel(period) {
     .then(blob => {
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `RSB_VisitorLOG_${period.toUpperCase()}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.download = `SECURE_VisitorLOG_${period.toUpperCase()}_${new Date().toISOString().split('T')[0]}.xlsx`;
       link.click();
     }).catch(err => alert('Export Error: ' + err.message));
 }

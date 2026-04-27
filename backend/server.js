@@ -28,14 +28,11 @@ try {
 
 // --- Nodemailer fallback transporter ---
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: { rejectUnauthorized: false },
 });
 
 if (!resendClient) {
@@ -181,7 +178,7 @@ async function generateQRCode(visitorId) {
 
     const result = await uploadToCloudinary(
       qrBuffer,
-      "rsb-visitors/qrcodes",
+      "visitors/qrcodes",
       `qr-${visitorId}`,
     );
     console.log("QR uploaded to Cloudinary:", result.secure_url);
@@ -213,7 +210,7 @@ app.post("/api/visitors", upload.single("photo"), async (req, res) => {
       try {
         const result = await uploadToCloudinary(
           req.file.buffer,
-          "rsb-visitors/photos",
+          "visitors/photos",
           `visitor-${Date.now()}`,
         );
         photoUrl = result.secure_url;
@@ -546,7 +543,7 @@ app.get("/api/visitors/:id/approve", async (req, res) => {
     res.send(`<!DOCTYPE html>
 <html>
 <head>
-  <title>Visitor Approved — RSB</title>
+  <title>Visitor Approved — SECURE</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding: 40px; background: #f0fdf4; }
     h1 { color: #16a34a; }
@@ -578,7 +575,7 @@ app.post("/api/admin/login", (req, res) => {
   const correctPassword = process.env.ADMIN_PASSWORD || "1234";
 
   if (password === correctPassword) {
-    res.json({ success: true, token: "rsb-admin-auth-token-xyz" });
+    res.json({ success: true, token: "secure-admin-auth-token-xyz" });
   } else {
     res.status(401).json({ error: "Invalid credentials" });
   }

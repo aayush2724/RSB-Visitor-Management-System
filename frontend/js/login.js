@@ -21,7 +21,7 @@ async function checkPin() {
 
     if (res.ok) {
       const data = await res.json();
-      sessionStorage.setItem("rsb_auth", data.token); // Secure token, not plaintext PIN
+      sessionStorage.setItem("secure_auth", data.token); // Secure token, not plaintext PIN
       btnSpan.innerHTML = "&#9670; GRANTED";
       setTimeout(() => (window.location.href = "/dashboard.html"), 400);
     } else {
